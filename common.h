@@ -21,8 +21,8 @@ typedef struct{
 	byte pay_load_size[2];
 	byte flag;
 	byte _type;
-	byte start_time;
-	byte end_time;
+	byte start_time[4];
+	byte end_time[4];
 	byte total;
 	byte index;
 	byte pay_load[N];
