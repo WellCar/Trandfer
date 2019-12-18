@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 
-#define N (1024*9)
+#define BUFFER_SIZE (1024*20)
 typedef unsigned char byte;
 typedef struct{
 	byte head[2];
@@ -25,7 +25,7 @@ typedef struct{
 	byte end_time[4];
 	byte total;
 	byte index;
-	byte pay_load[N];
+	byte *pay_load;
 	byte check;
 }videdata;
 
@@ -43,9 +43,5 @@ UPD Server setting
 
 void* upd(void* argv);
 void* tcp(void* argv);
-
-/*
-Queue 
-*/
 
 #endif

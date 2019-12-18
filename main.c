@@ -6,11 +6,17 @@ Mail:jiangjian@hotzone.cn
 */
 
 #include "common.h"
+#include "queue.h"
 
+/*Define Globel Varible*/
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+struct queue qd;
 
 int main(int argc,char **argv)
 {
+	// do init 
+	queue_init(&qd);
+	
 	pthread_t tid[2];
 	pthread_mutex_init(&mutex,NULL);
 	int ret = pthread_create(&tid[0],NULL,upd,NULL);

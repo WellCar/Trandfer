@@ -1,77 +1,75 @@
-#include "common.h"
+#include"queue.h"
+#include<assert.h>
 
-#define SIZE 32
-
-typedef struct QNode //节点结构
+//#define DEBUG 1
+void queue_init(struct queue * qd)
 {
-	videdata data;
-	struct QNode *next;
-}QNode,*QueuePtr;
-
-typedef struct Link_queue//队列的链表结构
-{
-	QueuePtr front,rear; //队列的头、尾指针
-}LinkQueue;
-
-typedef int Status;
-
-#define ERR_OK 0
-#define ERR_NO 1
-
-//入队操作
-Status Enqueue(LinkQueue* Q,QElemType e)
-{
-	QueuePtr newNode = (QueuePtr)malloc(sizeof(QNode)); //新建队列节点
-
-	size_t len = strlen(e);
-
-	newNode->data = (QElemType)malloc(len+2*sizeof(char));    //为节点数据域分配内存
-
-	//数据域循环赋值
-	int i=0;
-	for(i=0;i<len;i++)
-	{
-		newNode->data[i] = e[i];
-	}
-	newNode->data[len] = '\0';
-
-
-	newNode->next = NULL;
-
-	Q->rear->next = newNode; //队列的尾指针指向的当前节点的下一个位置，指向s
-	Q->rear = newNode;    //队列的尾指针向后移动至新节点
-	return ERR_OK;
-
+	qd->front = NULL;
+	qd->rear = NULL;
+	qd->size = 0;
 }
 
-//出队操作,使用后需要释放e的内存
-Status DeQueue(LinkQueue* Q,QElemType* e)
+int queue_empty(struct queue * qd)
 {
-	QueuePtr p;
-
-	p = Q->front->next; //要出队的是头结点的下一个节点
-	//*e = p->data;    //将要出队的节点数据赋值给e
-	size_t len = strlen(p->data);
-
-	*e=(QElemType)malloc(len+2*sizeof(char));
-
-
-	int i=0;
-	for(i=0;i<len;i++)
-	{
-		(*e)[i] = p->data[i];
-	}
-	(*e)[len]='\0';
-
-	Q->front->next = p->next;
-
-	if(Q->rear == p) //尾指针指向p说明队列空了
-	{
-		Q->rear = Q->front;
-	}
-
-	free(p->data);
-	free(p);
-	return ERR_OK;
+	return (qd->size == 0) ? 1:0;
 }
 
+void queue_push(struct queue *qd, const videdata * data,int *data_len)
+{
+	struct  link * node = (struct link *)malloc(sizeof(struct link));
+	assert(node != NULL);
+
+	node->data = *data;
+	node->data_len = *data_len;
+	node->next = NULL;
+	if(qd->size <= MAX_SIZE)
+	{
+		if(queue_empty(qd))
+		{
+			qd->front = node;
+			qd->rear = node;
+		}
+		else
+		{
+			qd->rear->next = node;
+			qd->rear = node;
+		}
+		++qd->size;
+#ifdef DEBUG	
+		printf("Now QueueSize=%d\n",(qd->size));
+#endif
+	}else
+	{
+		printf("ERROR: Queue FULL \n");exit(-1);
+	}
+}
+
+int queue_pop(struct queue *qd, videdata * data,int * data_len)
+{
+	if(queue_empty(qd))
+	{
+		printf("Queue is emtpy ,can not exetue POP \n");
+		return 0;
+	}
+	struct link * tmp = qd->front;
+	*data = qd->front->data;
+	*data_len = qd->front->data_len;
+	qd->front = qd->front->next;
+	free(tmp);
+	--qd->size;
+#ifdef DEBUG	
+	printf("Now QueueSize=%d\n",(qd->size));
+#endif
+	return 1;
+}
+
+void queue_destroy(struct queue *qd)
+{
+	struct link * tmp;
+	while(qd->front)
+	{
+		tmp = qd->front;
+		qd->front = qd->front->next;
+		free(tmp);
+	}
+}

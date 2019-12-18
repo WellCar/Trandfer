@@ -3,7 +3,7 @@
 # Ltc: Hotzone
 # Mail:jiangjian@hotzone.cn
 
-SRC	:=main.c tcp.c udp.c
+SRC	:=main.c tcp.c udp.c queue.c
 MAIN	:=main
 EX_LIB	:=-lpthread
 CFLAGS	:=-g -Wall

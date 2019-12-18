@@ -12,7 +12,7 @@
 int main(int argc, char** argv){
     int  listenfd, connfd;
     struct sockaddr_in  servaddr;
-    char  buff[N];
+    char  buff[BUFFER_SIZE];
     int  n;
 
     if( (listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ){
@@ -41,7 +41,7 @@ int main(int argc, char** argv){
             printf("accept socket error: %s(errno: %d)",strerror(errno),errno);
             continue;
         }
-        n = recv(connfd, buff, N, 0);
+        n = recv(connfd, buff, BUFFER_SIZE, 0);
         buff[n] = '\0';
         printf("recv msg from client: %s...,Bytes:%d\n", buff,n);
         close(connfd);
