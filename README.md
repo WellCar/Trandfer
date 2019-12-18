@@ -1,10 +1,11 @@
-# Trandfer
-udp to tcp transfer 
+# Transfer
+UDP server recv msg and TCP client transfer 
 # Config IP & PORT in common.h file as follow
 
 /*
 TCP Server setting
 */
+
 #define TCP_SERVER_IP	"127.0.0.1"
 #define TCP_SERVER_PORT	18888
 
