@@ -36,7 +36,6 @@ void* upd(void* argv)
 		memset(buffer,0,BUFFER_SIZE);
 		memset(data,0,sizeof(videdata));
 		ret = recvfrom(ufd,buffer,BUFFER_SIZE,0,(struct sockaddr *)&server_addr,&addrlen);
-		printf("UDP|  udp thread recv %d bytes data\n",ret);
 #ifdef  DEBUG
 		printf("UDP| ----------------------------------------------------- |UDP \n");
 		for (size_t i = 0; i <= ret; i++)
@@ -46,12 +45,19 @@ void* upd(void* argv)
 		}
 		printf("\nUDP| ----------------------------------------------------- |UDP \n");
 #endif
-		data->pay_load = (char *)malloc(ret-17);
-		decode(buffer,data,ret);
-		pthread_mutex_lock(&mutex);
-		queue_push(&qd,data,&ret);
-		pthread_mutex_unlock(&mutex);
-		//free(data->pay_load);
+		if(ret <= 17 )
+		{
+			printf("UDP|  udp thread recv %d bytes data, ignore this data,and continue\n",ret);
+			continue;
+		}else{
+			printf("UDP|  udp thread recv %d bytes data\n",ret);
+			data->pay_load = (char *)malloc(ret-17);
+			decode(buffer,data,ret);
+			pthread_mutex_lock(&mutex);
+			queue_push(&qd,data,&ret);
+			pthread_mutex_unlock(&mutex);
+			//free(data->pay_load);
+		}
 	}
 	close(ufd);
 }
