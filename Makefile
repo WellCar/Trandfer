@@ -12,7 +12,7 @@ TEST	:=udpclient tcpserver
 ALL:${SRC} ${TEST}
 	${CC}  -o ${MAIN} ${SRC} ${EX_LIB}
 
-.PHONY:clean
+.PHONY:clean test
 clean:
 	rm ${MAIN} ${TEST}
 
@@ -22,5 +22,6 @@ udpclient:udpclient.c
 tcpserver:tcpserver.c
 	${CC}  -o $@ $<
 
-
+test:
+	${MAKE} -C test
 	
