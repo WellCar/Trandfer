@@ -1,11 +1,11 @@
 # Makefile for client 4g transfer 
 
-src	:=main.c
+src	:=main.c queue.c
 
 PHONY	:=all
 
 all:$(src)
-	gcc -o main $< -lpthread
+	gcc -o main $^ -lpthread
 	
 .PHONY:clean
 

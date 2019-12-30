@@ -40,11 +40,12 @@ void queue_push(struct queue *qd, const DATA * data,int *data_len)
 #endif
 	}else
 	{
+		
 		printf("ERROR: Queue FULL \n");exit(-1);
 	}
 }
 
-int queue_pop(struct queue *qd, videdata * data,int * data_len)
+int queue_pop(struct queue *qd, DATA * data,int * data_len)
 {
 	if(queue_empty(qd))
 	{

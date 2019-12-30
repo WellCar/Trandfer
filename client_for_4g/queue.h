@@ -22,7 +22,7 @@
 #define MSG_REAR	2
 
 #define SER_IP	"127.0.0.1"
-#define SER_PORT	18889
+#define SER_PORT	18888
 
 #define MAX_SIZE	100
 
