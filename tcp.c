@@ -46,6 +46,12 @@ void*  tcp(void* argv)
 			} 	
 			pthread_mutex_lock(&mutex);
 			queue_pop(&qd,data,&data_len);
+
+
+
+
+
+			
 			pthread_mutex_unlock(&mutex);
 			printf("TCP|  queue not empty,Ready to transfer data len= %d\n",data_len);	
 			encode_data(data,buffer,data_len);

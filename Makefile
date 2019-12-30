@@ -9,10 +9,13 @@ EX_LIB	:=-lpthread
 CFLAGS	:=-g -Wall
 TEST	:=udpclient tcpserver
 
+SUBDIR	:=client_for_4g test
+
+
 ALL:${SRC} ${TEST}
 	${CC}  -o ${MAIN} ${SRC} ${EX_LIB}
 
-.PHONY:clean test
+.PHONY:clean test 
 clean:
 	rm ${MAIN} ${TEST}
 
