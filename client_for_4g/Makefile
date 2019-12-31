@@ -4,10 +4,15 @@ src	:=main.c queue.c
 
 PHONY	:=all
 
-all:$(src)
+
+all:$(src) server
 	gcc -o main $^ -lpthread
 	
+
+server:tcpserver.c
+	gcc -o server tcpserver.c
+
 .PHONY:clean
 
 clean:
-	rm -fr main 
+	rm -fr main server

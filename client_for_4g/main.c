@@ -9,32 +9,118 @@ Mail:jiangjian@hotzone.cn
 #define KEEP_ALIVE_BUFFER_LEN	50
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-struct queue qd;
+struct queue  * qd;
 
 DATA kell_alive;
 byte * keep_alive_buffer;
+byte * data_buffer;
+
+int is_big()
+{
+	int a = 1;
+	char *p = (char *)&a;
+	return (*p == 1) ? 1:0;
+}
+
+void assign_memory()
+{
+	qd = (struct  queue*)malloc(sizeof(struct queue));
+	keep_alive_buffer = (byte*)malloc(KEEP_ALIVE_BUFFER_LEN);
+	data_buffer = (byte*)malloc(26);
+}
+
+unsigned short check_sum(char * d,int len)
+{
+	char b =0;
+	unsigned short crc = 0xFFFF;
+	int i = 0;
+	int j = 0;
+	for(i=0;i<len;i++)
+	{
+		for(j=0;j<8;j++)
+		{
+			b = ((d[i]<<j)&0x80)^((crc&0x8000)>>8);
+			crc <<= 1;
+			if(b != 0)
+			{
+				crc ^= 0x1021;
+			}
+		}
+	}
+	return crc;
+}
 
 void sys_init()
 {
-	queue_init(&qd);
+	assign_memory();
+	queue_init(qd);
+}
+
+void meg_head_set()
+{
+	*(keep_alive_buffer) = 0xAA;
+	*(keep_alive_buffer+1) = 0xAB;
+	*(keep_alive_buffer+2) = 0xAC;
+}
+
+void msg_type_set()
+{
+	*(keep_alive_buffer+3) = 0x01;
+}
+
+void msg_id_set()
+{
+	memcpy(keep_alive_buffer+4,"XXXX",4);
+}
+
+void msg_check_sum_set()
+{
+	unsigned short crc = check_sum(keep_alive_buffer+45,2);
+	if(is_big())
+	{
+		memcpy(keep_alive_buffer+45,(char *)&crc,2);
+	}else
+	{
+		memcpy(keep_alive_buffer+45,(char *)&crc,2);
+	}
+	
+}
+
+void msg_data_set()
+{
+	*(keep_alive_buffer+8) = 0x02;
+	*(keep_alive_buffer+9) = 0x10;
+	memcpy(keep_alive_buffer+10,"44",4);
+	*(keep_alive_buffer+14) = 0x01;
+	*(keep_alive_buffer+15) = 0xFF;
+	memcpy(keep_alive_buffer+16,"XX",2);
+	*(keep_alive_buffer+18) = 0xFF;
+	*(keep_alive_buffer+19) = 0x01;
+	memcpy(keep_alive_buffer,data_buffer,26);
+}
+
+void msg_rear_set()
+{
+	*(keep_alive_buffer+47) = 0xAA;
+	*(keep_alive_buffer+48) = 0xAB;
+	*(keep_alive_buffer+49) = 0xAC;
+}
+
+void b_clear()
+{
+	memset(keep_alive_buffer,0,KEEP_ALIVE_BUFFER_LEN);
+	memset(data_buffer,0,26);
 }
 
 void update_keep_alive_data()
 {
-	memset(keep_alive_buffer,0,KEEP_ALIVE_BUFFER_LEN);
-	keep_alive_buffer = (byte*)malloc(KEEP_ALIVE_BUFFER_LEN);
-	*(keep_alive_buffer) = 0xAA;
-	*(keep_alive_buffer+1) = 0xAB;
-	*(keep_alive_buffer+2) = 0xAC;
-	memcpy(keep_alive_buffer+3,"XXXX",4);
-	*(keep_alive_buffer+7) = 0x02;
-	*(keep_alive_buffer+8) = 0x10;
-	memcpy(keep_alive_buffer+9,"44",4);
-	*(keep_alive_buffer+13) = 0x01;
-	*(keep_alive_buffer+14) = 0xFF;
-	memcpy(keep_alive_buffer+15,"XX",2);
-	*(keep_alive_buffer+17) = 0xFF;
-	*(keep_alive_buffer+18) = 0xAB;
+	b_clear();
+	meg_head_set();
+	msg_type_set();
+	msg_id_set();
+	msg_data_set();
+	msg_check_sum_set();
+	msg_rear_set();
 } 
 
 void *deal_thread(void *argv)
@@ -70,27 +156,29 @@ void *tcp_thread(void * argv)
 	if(connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){ 
 		printf("connect error: %s(errno: %d)\n",strerror(errno),errno);
 		return 0;
-	} 
+	}else{
+		printf("Connect success.\n");
+	}
 	while(1)
 	{
-		if(queue_empty(&qd))
+		if(queue_empty(qd))
 		{
-			printf("Send Keep Alive bytes[");
 			/*ERROR Cannot use sleep ,Need to chang*/
 			sleep(1);
 			// Send KeepAlive
 			update_keep_alive_data();
-			int ret = send(sockfd,keep_alive_buffer,KEEP_ALIVE_BUFFER_LEN,0);
+			size_t ret = send(sockfd,keep_alive_buffer,KEEP_ALIVE_BUFFER_LEN,0);
 			if(ret == -1)
 			{
 				printf("Send keep alive failed\n");
 			}else
 			{
-				printf("%d]...\n",ret);
+				printf("Send Keep Alive bytes[%ld] ...\n",ret);
 			}
 		}else
 		{
 			// Send normal data
+			printf("Delay 1 s\n");
 			sleep(1);
 		}
 	}
