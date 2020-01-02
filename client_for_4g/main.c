@@ -5,6 +5,7 @@ Ltc: Hotzone
 Mail:jiangjian@hotzone.cn
 */
 #include "queue.h"
+#include "common.h"
 
 #define KEEP_ALIVE_BUFFER_LEN	50
 
@@ -13,7 +14,7 @@ struct queue  * qd;
 
 DATA kell_alive;
 byte * keep_alive_buffer;
-byte * data_buffer;
+byte * keep_adlive_data_buffer;
 
 int is_big()
 {
@@ -26,7 +27,7 @@ void assign_memory()
 {
 	qd = (struct  queue*)malloc(sizeof(struct queue));
 	keep_alive_buffer = (byte*)malloc(KEEP_ALIVE_BUFFER_LEN);
-	data_buffer = (byte*)malloc(26);
+	keep_adlive_data_buffer = (byte*)malloc(26);
 }
 
 unsigned short check_sum(char * d,int len)
@@ -76,14 +77,41 @@ void msg_id_set()
 void msg_check_sum_set()
 {
 	unsigned short crc = check_sum(keep_alive_buffer+45,2);
+	char * tmp =  (char *)&crc;
 	if(is_big())
 	{
-		memcpy(keep_alive_buffer+45,(char *)&crc,2);
+		printf("CheckSum low:%x,High:%x\n",*tmp,*(tmp+1));
+		memcpy(keep_alive_buffer+45,tmp,2);
 	}else
 	{
-		memcpy(keep_alive_buffer+45,(char *)&crc,2);
+		memcpy(keep_alive_buffer+45,tmp+1,1);
+		memcpy(keep_alive_buffer+46,tmp,1);
 	}
 	
+}
+
+void int_to_hex(unsigned int  value, char buffer[], int length)
+{
+
+}
+
+void keep_alive_data_buffer_set()
+{
+	byte hex[4];
+	time_t now;
+	struct tm * t_tm;
+	time(&now);
+    t_tm = localtime(&now);
+	
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	/*Debug 
+ 	printf("today is %4d-%02d-%02d %02d:%02d:%02d\n", 
+    t_tm->tm_year+1900, t_tm->tm_mon+1, t_tm->tm_mday, 
+    t_tm->tm_hour, t_tm->tm_min, t_tm->tm_sec); 
+    printf("millisecond:%ld\n",tv.tv_sec*1000 + tv.tv_usec/1000);
+	*/
+	int_to_hex(t_tm->tm_year+1900,hex,4);
 }
 
 void msg_data_set()
@@ -96,20 +124,21 @@ void msg_data_set()
 	memcpy(keep_alive_buffer+16,"XX",2);
 	*(keep_alive_buffer+18) = 0xFF;
 	*(keep_alive_buffer+19) = 0x01;
-	memcpy(keep_alive_buffer,data_buffer,26);
+	keep_alive_data_buffer_set();
+	memcpy(keep_alive_buffer,keep_adlive_data_buffer,26);
 }
 
 void msg_rear_set()
 {
-	*(keep_alive_buffer+47) = 0xAA;
-	*(keep_alive_buffer+48) = 0xAB;
-	*(keep_alive_buffer+49) = 0xAC;
+	*(keep_alive_buffer+47) = 0xBA;
+	*(keep_alive_buffer+48) = 0xBB;
+	*(keep_alive_buffer+49) = 0xBC;
 }
 
 void b_clear()
 {
 	memset(keep_alive_buffer,0,KEEP_ALIVE_BUFFER_LEN);
-	memset(data_buffer,0,26);
+	memset(keep_adlive_data_buffer,0,26);
 }
 
 void update_keep_alive_data()

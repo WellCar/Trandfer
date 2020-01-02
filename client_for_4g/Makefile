@@ -1,11 +1,14 @@
 # Makefile for client 4g transfer 
 
-src	:=main.c queue.c
+CROSS_COMPILE	:=arm-linux-gnueabihf-
+GCC	:=$(CROSS_COMPILE)gcc
+
+src	:=main.c queue.c common.c
 
 PHONY	:=all
 
 
-all:$(src) server
+all:$(src)
 	gcc -o main $^ -lpthread
 	
 

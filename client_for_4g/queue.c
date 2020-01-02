@@ -1,6 +1,7 @@
 #include"queue.h"
 #include<assert.h>
 
+#define MAX_SIZE	100
 //#define DEBUG 1
 void queue_init(struct queue * qd)
 {
